@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Soru Ekleme Paneli</title>
+    <style>
+        .difficulty-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .difficulty-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-div">
+        <h1>Soru Ekleme Paneli</h1>
+        <div class="questpanel">
+            <h2 id="question">Soruyu Girin</h2>
+            <input type="text" class="quest1" id="quest1" name="name" placeholder="Soruyu Giriniz..." style="color: black;">
+            <div class="answers" id="answers">
+                <input type="text" id="a1" name="name" placeholder="Şık 1" style="color: black;">
+                <input type="text" id="a2" name="name" placeholder="Şık 2" style="color: black;">
+                <input type="text" id="a3" name="name" placeholder="Şık 3" style="color: black;">
+                <input type="text" id="a4" name="name" placeholder="Şık 4" style="color: black;">
+            </div>
+            <div class="correct-answer">
+                <label for="correct-answer">Doğru Şık:</label>
+                <select id="correct-answer">
+                    <option value="a1">Şık 1</option>
+                    <option value="a2">Şık 2</option>
+                    <option value="a3">Şık 3</option>
+                    <option value="a4">Şık 4</option>
+                </select>
+            </div>
+            <div class="difficulty">
+                <label for="difficulty">Zorluk Seviyesi:</label>
+                <input type="range" id="difficulty" min="0" max="2" step="1" class="difficulty-slider">
+                <div class="difficulty-labels">
+                    <span>Kolay</span>
+                    <span>Orta</span>
+                    <span>Zor</span>
+                </div>
+            </div>
+            <div class="addquestdiv">
+                <button class="addquestdivbtn" id="addquestion">Soru Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="addquest.js"></script>
+</body>
+</html>

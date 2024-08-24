@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Sorular</title>
+</head>
+<body>
+    <div class="main-div">
+        <form action="/search" method="GET" class="search-form">
+            <input type="text" id="search-input" placeholder="Soru Ara" class="search-input" style="background-color: white; color: black;">
+        </form>
+        
+        <div class="difficulty-filter">
+            <label for="difficulty-select">Zorluk Seviyesi:</label>
+            <select id="difficulty-select">
+                <option value="">Tümü</option>
+                <option value="0">Kolay</option>
+                <option value="1">Orta</option>
+                <option value="2">Zor</option>
+            </select>
+        </div>
+        
+        <div id="questions-container"></div>
+        
+        <div class="button-container">
+            <a href="index.html" class="nextbtn">AnaSayfa</a>
+            <a href="addquest.html"><button class="nextbtn" id="questionpage">Soru Ekle</button></a>
+            <a href="takequiz.html"><button class="nextbtn" id="takequizpage">Hemen Çöz!</button></a>
+        </div>
+    </div>
+
+    <script src="quests.js"></script>
+</body>
+</html>
