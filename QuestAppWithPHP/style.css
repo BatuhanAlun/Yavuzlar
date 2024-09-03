@@ -1,0 +1,293 @@
+
+* {
+    color: white;
+}
+
+body {
+    background-color: gray;
+}
+
+a {
+    text-decoration: none;
+}
+
+.btn-main {
+    background-color: rgb(0, 0, 0);
+    width: 90%;
+    max-width: 800px;
+    margin: 30px auto;
+    border-radius: 10px;
+    border: 2px solid white;
+    font-size: 50px;
+    display: flex;
+    justify-content: center;
+}
+
+.main-div {
+    background-color: rgb(0, 0, 0);
+    width: 90%;
+    max-width: 600px;
+    margin: 100px auto 0;
+    border-radius: 10px;
+    padding: 50px;
+}
+
+
+.search-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.search-input {
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid black;
+    border-radius: 5px 0 0 5px;
+    width: 300px;
+}
+
+.search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 0 5px 5px 0; 
+    background-color: rgb(0, 0, 0);
+    cursor: pointer;
+    border: 1px solid white;
+}
+
+
+.questions {
+    margin: 10px 0; 
+    padding: 15px; 
+    border: 1px solid rgb(255, 255, 255); 
+    border-radius: 5px; 
+    background-color: #000000; 
+    position: relative;
+}
+
+.question-buttons {
+    position: absolute; 
+    right: 10px; 
+    top: 10px; 
+}
+
+.question-buttons button {
+    margin-left: 5px; 
+    padding: 5px 10px;    
+    border-radius: 3px; 
+    cursor: pointer; 
+}
+
+.edit-button {
+    background-color: #000000; 
+    color: rgb(255, 255, 255); 
+    border: 1px solid white;
+}
+
+.delete-button {
+    background-color: red; 
+    color: white; 
+}
+
+
+.nextbtn {
+    background-color: #000000; 
+    color: rgb(255, 255, 255); 
+    border: 1px solid white;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.nextdiv {
+    position: relative;
+}
+
+
+.answers {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 20px; 
+    max-width: 1000px; 
+    margin: 0 auto; 
+}
+
+.answers input {
+    width: 40%;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: large;
+} 
+
+
+.questpanel {
+    gap: 20px; 
+    max-width: 600px; 
+    position: relative;
+}
+
+.quest1 {
+    width: 100%;
+    max-width: 400px; 
+    padding: 10px; 
+    font-size: 1em; 
+    border: 1px solid gray; 
+    border-radius: 5px; 
+    box-sizing: border-box;
+}
+
+.questpanel label {
+    display: block;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+#difficulty {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.addquestdivbtn {
+    background-color: #000000; 
+    color: rgb(255, 255, 255); 
+    border: 1px solid white;
+    padding: 10px; 
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: auto;
+    right: 12px;
+    top: 5px;
+    position: absolute;
+}
+
+.addquestdiv {
+    position: relative;
+}
+
+.correct-answer {
+    margin-top: 20px;
+    font-size: 1em;
+
+}
+
+.correct-answer label {
+    font-size: 25px;
+
+    margin-right: 10px;
+}
+
+#correct-answer {
+    color: #000000;
+    font-size: large;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#question {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+#answers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.answer-button {
+    background-color: gray;
+    color: white;
+    border: 2px solid white;
+    padding: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.answer-button:hover {
+    background-color: gray;
+}
+
+.answer-button.correct {
+    background-color: greenyellow; 
+    border-color: greenyellow;
+}
+
+.answer-button.incorrect {
+    background-color: red;
+    border-color: red;
+}
+
+
+#next-button {
+    background-color: #000000;
+    color: white;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#next-button:disabled {
+    background-color: gray;
+    border-color: gray;
+    cursor: not-allowed;
+}
+
+#difficulty-select {
+    background-color: white;
+    color: #000000;
+}
+
+.login-container {
+    display: inline-block;
+    max-width: 400px;
+    width: 90%;
+    margin-top: 5px;
+}
+
+.loginbtn {
+    color: white;
+    border-radius: 2px;
+    background-color: black;
+    border: 1px solid white;
+    margin-top: 5px;
+    width: 75px;
+
+}
+
+#username {
+    width: 200px;
+}
+
+.userinput {
+    background-color: #000000;
+    color: white;
+    border: 2px solid white;
+}
+
+.difficulty-slider {
+    width: 100%;
+    margin-top: 10px;
+}
+.difficulty-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
