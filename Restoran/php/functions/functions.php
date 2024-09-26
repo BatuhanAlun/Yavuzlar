@@ -112,7 +112,7 @@ function login($username, $passwd) {
 function updateUser($username,$fname,$surname,$user_id,$dest_path){
 
     include "db.php";
-    echo "11111";
+
     $query = "UPDATE users SET username = '$username',fname = '$fname',surname = '$surname', pp_path = '$dest_path' WHERE id = '$user_id'";
 
     $statement = $pdo->prepare($query);

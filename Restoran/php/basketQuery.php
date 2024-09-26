@@ -25,19 +25,24 @@ $_SESSION['balance'] = $balance - $total_price;
 $balance = $_SESSION['balance'];
 
 
-if (!empty($c_id)) {
+if (is_int($c_id)) {
     markCoupon($user_id, $c_id);
 }
 
 
 updateBalance($user_id, $balance);
 
+if($total_price == 0){
+    header("Location: menu.php?message=Empty Basket");
+    exit();
+}else {
+    $order_id = openOrder($user_id, $total_price, $notes);
+    clearBasket($user_id);
+}
 
-$order_id = openOrder($user_id, $total_price, $notes);
-clearBasket($user_id);
 
 
-header("Location: order_confirmation.php?order_id=$order_id");
+header("Location: orderhistory.php?message=Order Submitted");
 exit();
 
 

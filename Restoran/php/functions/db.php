@@ -2,8 +2,8 @@
 
 $host = 'db';         
 $dbname = 'php_proje';      
-$uname = 'regular';      
-$password = 'regular';
+$uname = 'root';      
+$password = 'root';
 
 try {
 

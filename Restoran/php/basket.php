@@ -223,7 +223,7 @@ if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
 
                     
                     <div class="text-center mt-4">
-                        <form method="post" action="">
+                        <form method="post" action="basket.php" enctype="multipart/form-data">
                             <div class="form-group">
                                 <label for="coupon">Enter Coupon Code:</label>
                                 <input type="text" name="coupon" id="coupon" class="form-control" placeholder="Coupon Code" style="max-width: 300px; margin: 0 auto;">
@@ -244,7 +244,7 @@ if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
                     
                     <div class="text-center mt-3">
                         <form method="post" action="basketQuery.php">
-                            <input type="hidden" name="c_id" value="<?php echo htmlspecialchars($c_id)?>">
+                            <input type="hidden" name="c_id" value="<?php echo htmlspecialchars($c_id) ?>">
                             <textarea name="note" id="note" placeholder="Please add your note."></textarea>
                             <button type="submit" name="order_now" class="btn btn-primary mt-3">Order Now</button>
                             <input type="hidden" name="final_price" value="<?php echo htmlspecialchars($total_price);?>">
