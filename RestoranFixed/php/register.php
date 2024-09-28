@@ -1,48 +1,22 @@
-<?php
-
-session_start();
-include "functions/functions.php";
-
-if (!isset($_SESSION['company_id'])) {
-    header("location:index.php?message=You are not a business type user.");
-}
-
-$company_id = $_SESSION['company_id'];
-
-$res_ids = getResComp($company_id);
-
-$allPendingOrders = getAllOpenPendingOrders();
-$allClosedOrders = getAllClosedOrders();
-
-$orders = filterOrdersByResIds($allPendingOrders, $res_ids);
-$closedorders = filterOrdersByResIds($allClosedOrders, $res_ids);
-
-$groupedOrders = [];
-foreach ($orders as $order) {
-    $groupedOrders[$order['order_id']]['meals'][] = $order['meal_name'];
-    $groupedOrders[$order['order_id']]['quantity'][] = $order['quantity'];
-    $groupedOrders[$order['order_id']]['total_price'] = $order['total_price'];
-    $groupedOrders[$order['order_id']]['notes'] = $order['notes'];
-    $groupedOrders[$order['order_id']]['status'] = $order['status'];
-}
-$groupedclosedOrders = [];
-foreach ($closedorders as $closedorder) {
-    $groupedclosedOrders[$closedorder['order_id']]['meals'][] = $closedorder['meal_name'];
-    $groupedclosedOrders[$closedorder['order_id']]['quantity'][] = $closedorder['quantity'];
-    $groupedclosedOrders[$closedorder['order_id']]['total_price'] = $closedorder['total_price'];
-    $groupedclosedOrders[$closedorder['order_id']]['notes'] = $closedorder['notes'];
-    $groupedclosedOrders[$closedorder['order_id']]['status'] = $closedorder['status'];
-}
-
+<?php 
+  session_start();
+  if (isset($_SESSION['id']) && isset($_SESSION['username']) ) {
+    header("Location: index.php?message=You are already logged in!");
+  }
 
 ?>
+
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>Restoran - Bootstrap Restaurant Template</title>
+    <title>Register - Bootstrap Restaurant Template</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -53,18 +27,37 @@ foreach ($closedorders as $closedorder) {
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="lib/animate/animate.min.css" rel="stylesheet">
+    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <script>
+        function handleRoleChange() {
+            var role = document.getElementById('role').value;
+            var usernameLabel = document.getElementById('username-label');
+            var usernameInput = document.getElementById('username');
+
+            if (role === 'company') {
+                usernameLabel.textContent = 'Company Name';
+                usernameInput.placeholder = 'Company Name';
+            } else {
+                usernameLabel.textContent = 'Username';
+                usernameInput.placeholder = 'Username';
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -103,23 +96,23 @@ foreach ($closedorders as $closedorder) {
                     } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
-                        echo '<a href="booking.html" class="nav-item nav-link">About</a>';
+                        echo '';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                     echo '';
                     } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -151,107 +144,58 @@ foreach ($closedorders as $closedorder) {
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title text-primary">Open Orders</h5>
-                    <h1 class="mb-5">Manage Pending Orders</h1>
+                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Register</h5>
+                    <h1 class="mb-5">Create Your Account</h1>
                 </div>
-
                 <div class="row g-4">
-                    <?php if (empty($groupedOrders)): ?>
-                        <p>No open orders available at the moment.</p>
-                    <?php else: ?>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Meals</th>
-                                    <th>Quantity</th>
-                                    <th>Total Price</th>
-                                    <th>Notes</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($groupedOrders as $order_id => $orderDetails): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($order_id); ?></td>
-                                        <td><?php echo htmlspecialchars(implode(', ', $orderDetails['meals'])); ?></td>
-                                        <td><?php echo htmlspecialchars(implode(', ', $orderDetails['quantity'])); ?></td>
-                                        <td><?php echo htmlspecialchars($orderDetails['total_price']); ?> ₺</td>
-                                        <td><?php echo htmlspecialchars($orderDetails['notes']); ?></td>
-                                        <td><?php echo htmlspecialchars($orderDetails['status']); ?></td>
-                                        <td>
-                                            <form action="resorderQuery.php" method="POST">
-                                                <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
-                                                <select name="order_status" class="form-select">
-                                                    <option value="pending" <?php echo $orderDetails['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                                    <option value="processing">Processing</option>
-                                                    <option value="completed">Completed</option>
-                                                    <option value="cancelled">Cancelled</option>
+                    <div class="col-md-6 offset-md-3 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="card border-0 shadow rounded-4">
+                            <div class="card-body p-4 p-sm-5">
+                                <form action="registerQuery.php" method="post" enctype="multipart/form-data">
+                                    <div class="row g-3">
+                                        
+                                        <div class="col-md-12">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="role" name="role" aria-label="Role" onchange="handleRoleChange()">
+                                                    <option value="" selected>Select a Role</option>
+                                                    <option value="user">User</option>
+                                                    <option value="company">Company</option>
                                                 </select>
-                                                <button type="submit" class="btn btn-primary mt-2">Update</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-
-
-
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title text-primary">Closed Orders</h5>
-                    <h1 class="mb-5">Manage Closed Orders</h1>
-                </div>
-
-                <div class="row g-4">
-                    <?php if (empty($groupedclosedOrders)): ?>
-                        <p>No closed orders available at the moment.</p>
-                    <?php else: ?>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Meals</th>
-                                    <th>Quantity</th>
-                                    <th>Total Price</th>
-                                    <th>Notes</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($groupedclosedOrders as $closedorder_id => $closedorderDetails): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($closedorder_id); ?></td>
-                                        <td><?php echo htmlspecialchars(implode(', ', $closedorderDetails['meals'])); ?></td>
-                                        <td><?php echo htmlspecialchars(implode(', ', $closedorderDetails['quantity'])); ?></td>
-                                        <td><?php echo htmlspecialchars($closedorderDetails['total_price']); ?> ₺</td>
-                                        <td><?php echo htmlspecialchars($closedorderDetails['notes']); ?></td>
-                                        <td><?php echo htmlspecialchars($closedorderDetails['status']); ?></td>
-                                        <td>
-                                            <form action="resorderQuery.php" method="POST">
-                                                <input type="hidden" name="order_id" value="<?php echo $closedorder_id; ?>">
-                                                <select name="order_status" class="form-select">
-                                                    <option value="pending" <?php echo $closedorderDetails['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                                    <option value="processing">Processing</option>
-                                                    <option value="completed">Completed</option>
-                                                    <option value="cancelled">Cancelled</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-primary mt-2">Update</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php endif; ?>
+                                                <label for="role">Role</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="fname" name="fname" placeholder="First Name" required>
+                                                <label for="name">First Name</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="surname" name="surname" placeholder="Last Name" required>
+                                                <label for="surname">Last Name</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                                                <label for="username" id="username-label">Username</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="form-floating">
+                                                <input type="password" class="form-control" id="passwd" name="passwd" placeholder="Password" required>
+                                                <label for="password">Password</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <button class="btn btn-primary w-100 py-3" type="submit">Register</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -322,17 +266,20 @@ foreach ($closedorders as $closedorder) {
         </div>
         <!-- Footer End -->
 
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
     <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="lib/tempusdominus/js/moment.min.js"></script>
+    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>

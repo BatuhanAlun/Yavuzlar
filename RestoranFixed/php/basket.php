@@ -1,22 +1,67 @@
 <?php
-session_start();
 
-if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
-    
-    header("Location:index.php?message=You are Already logged in!");
+error_reporting(0); // Disable all errors
+ini_set('display_errors', 0); // Hide errors from displaying on the page
+
+session_start();
+include "functions/functions.php";
+
+
+$user_id = $_SESSION['id'];
+$balance = $_SESSION['balance'];
+
+
+$meals = getMealBasket($user_id);
+if(empty($meals)){
+    header("Location:menu.php?message=Your Basket Empty!");
+}
+$coupons = getCoupon($user_id);
+$total_price = 0;
+
+
+foreach ($meals as $meal) {
+    $total_price += $meal['meal_price'] * $meal['quantity'];
+    $first_price = $total_price;
 }
 
+
+if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
+    $coupon = $_POST['coupon'];
+    $coupon_found = false;
+
+    if (in_array($coupon, array_column($coupons, 'c_name'))) {
+        foreach ($coupons as $cop) {
+            if ($cop['c_name'] == $coupon) {
+                $c_id = $cop['c_id'];
+                $c_percentage = $cop['percentage'];
+                $coupon_found = true;
+                break;
+            }
+        }
+
+        if ($coupon_found) {
+            $discount_amount = $total_price * ($c_percentage);
+            $total_price -= $discount_amount;
+            $discount_message = "<p class='text-success'>Discount applied! You saved " . number_format($discount_amount, 2) . " ₺</p>";
+        } else {
+            $discount_message = "<p class='text-danger'>Something went wrong with the coupon.</p>";
+        }
+    } elseif (isset($_POST['remove_coupon'])) {
+        $total_price = $first_price;
+        $discount_message = "<p class='text-info'>Coupon removed. Price reverted to original.</p>";
+    } else {
+        $discount_message = "<p class='text-danger'>Invalid Coupon</p>";
+}}
+
 ?>
-
-
 
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Restoran - Bootstrap Restaurant Template</title>
+<meta charset="utf-8">
+    <title>Yavuzlar Restoran APP</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -43,6 +88,32 @@ if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    <meta charset="utf-8">
+
+    <!-- Favicon -->
+    <link href="img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
+        rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .custom-blue-bg {
+    background-color: #007bff; /* Replace this with your desired blue color */
+}
+    </style>
 </head>
 
 <body>
@@ -71,33 +142,33 @@ if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -124,31 +195,71 @@ if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
             </div>
         </div>
         <!-- Navbar & Hero End -->
-
-
-        <!-- Service Start -->
+        <!-- Menu Start -->
         <div class="container-xxl py-5">
+            
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Hello!</h5>
-                    <h1 class="mb-5">Welcome To Start Of Adventure
-                    </h1>
+                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Your Basket</h5>
+                    <h1 class="mb-5">Your Delicious Meals</h1>
                 </div>
-                <div class="position-relative mx-auto" style="max-width: 400px;">
-                    <form action="loginQuery.php" method="post" enctype="multipart/form-data">
-                    <input class="form-control border-primary w-100 py-3 ps-4 pe-5" type="text" id="username" name="username" placeholder="Username">
-                    <p></p>
-                    <input class="form-control border-primary w-100 py-3 ps-4 pe-5" type="password" id="passwd" name="passwd" placeholder="Password">
-                    <p></p>
-                    <button type="submit" class="btn btn-primary py-2 position-absolute">Login</button>
-                    <p></p>
-                    <button type="button" id="register-btn" class="btn btn-primary py-2 position-absolute end-0">Register</button>
-                    </form>
+                
+                <div class="row g-4">
+                    <?php foreach ($meals as $meal): ?>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card restaurant-card">
+                            <img src="<?php echo htmlspecialchars($meal['meal_logo']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($meal['meal_name']); ?>">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo htmlspecialchars($meal['meal_name']); ?></h5>
+                                <p class="card-text"><?php echo htmlspecialchars($meal['meal_des']); ?></p>
+                                <p class="card-text">Price: <?php echo htmlspecialchars($meal['meal_price']); ?> ₺</p>
+                                <p class="card-text">Quantity: <?php echo htmlspecialchars($meal['quantity']); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+
+                    <div class="text-center mt-5">
+                        <h3>Total Price for All Meals: <?php echo htmlspecialchars($first_price); ?> ₺</h3>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <h3>Your Balance Is: <?php echo htmlspecialchars($balance); ?> ₺</h3>
+                    </div>
+
+                    
+                    <div class="text-center mt-4">
+                        <form method="post" action="basket.php" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="coupon">Enter Coupon Code:</label>
+                                <input type="text" name="coupon" id="coupon" class="form-control" placeholder="Coupon Code" style="max-width: 300px; margin: 0 auto;">
+                                <button type="submit" name="use_coupon" class="btn btn-primary mt-3">Use Coupon</button>
+                                <button type="submit" name="remove_coupon" class="btn btn-secondary mt-3">Remove Coupon</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    
+                    <?php if (isset($discount_message)) echo $discount_message; ?>
+
+                    
+                    <div class="text-center mt-4">
+                        <h3>Final Price after Discount: <?php echo number_format($total_price, 2); ?> ₺</h3>
+                    </div>
+
+                    
+                    <div class="text-center mt-3">
+                        <form method="post" action="basketQuery.php">
+                            <input type="hidden" name="c_id" value="<?php echo htmlspecialchars($c_id) ?>">
+                            <textarea name="note" id="note" placeholder="Please add your note."></textarea>
+                            <button type="submit" name="order_now" class="btn btn-primary mt-3">Order Now</button>
+                            <input type="hidden" name="final_price" value="<?php echo htmlspecialchars($total_price);?>">
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Service End -->
-        
+        <!-- Menu End -->
 
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -215,8 +326,6 @@ if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
         </div>
         <!-- Footer End -->
 
-
-        <!-- Back to Top -->
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
@@ -228,17 +337,11 @@ if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
     <script src="lib/waypoints/waypoints.min.js"></script>
     <script src="lib/counterup/counterup.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+   
+
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
-    <script>
-        document.getElementById('register-btn').addEventListener('click', function() {
-            window.location.href = 'register.php';
-        });
-    </script>
 </body>
 
 </html>

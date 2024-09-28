@@ -1,12 +1,12 @@
-<?php 
-  session_start();
-  if (isset($_SESSION['id']) && isset($_SESSION['username']) ) {
-    header("Location: index.php?message=You are already logged in!");
-  }
+<?php
+session_start();
+
+if(isset($_SESSION['id']) && isset($_SESSION['username'])) {
+    
+    header("Location:index.php?message=You are Already logged in!");
+}
 
 ?>
-
-
 
 
 
@@ -16,7 +16,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Register - Bootstrap Restaurant Template</title>
+    <title>Restoran - Bootstrap Restaurant Template</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
@@ -43,21 +43,6 @@
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
-    <script>
-        function handleRoleChange() {
-            var role = document.getElementById('role').value;
-            var usernameLabel = document.getElementById('username-label');
-            var usernameInput = document.getElementById('username');
-
-            if (role === 'company') {
-                usernameLabel.textContent = 'Company Name';
-                usernameInput.placeholder = 'Company Name';
-            } else {
-                usernameLabel.textContent = 'Username';
-                usernameInput.placeholder = 'Username';
-            }
-        }
-    </script>
 </head>
 
 <body>
@@ -86,33 +71,33 @@
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && ($_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin") ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && ($_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin") ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
-                        echo '<a href="booking.html" class="nav-item nav-link">About</a>';
+                        echo '';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                    } elseif(isset($_SESSION['rolee']) && ($_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin")){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -141,65 +126,29 @@
         <!-- Navbar & Hero End -->
 
 
+        <!-- Service Start -->
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Register</h5>
-                    <h1 class="mb-5">Create Your Account</h1>
+                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Hello!</h5>
+                    <h1 class="mb-5">Welcome To Start Of Adventure
+                    </h1>
                 </div>
-                <div class="row g-4">
-                    <div class="col-md-6 offset-md-3 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="card border-0 shadow rounded-4">
-                            <div class="card-body p-4 p-sm-5">
-                                <form action="registerQuery.php" method="post" enctype="multipart/form-data">
-                                    <div class="row g-3">
-                                        
-                                        <div class="col-md-12">
-                                            <div class="form-floating">
-                                                <select class="form-select" id="role" name="role" aria-label="Role" onchange="handleRoleChange()">
-                                                    <option value="" selected>Select a Role</option>
-                                                    <option value="user">User</option>
-                                                    <option value="company">Company</option>
-                                                </select>
-                                                <label for="role">Role</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="fname" name="fname" placeholder="First Name" required>
-                                                <label for="name">First Name</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="surname" name="surname" placeholder="Last Name" required>
-                                                <label for="surname">Last Name</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
-                                                <label for="username" id="username-label">Username</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="form-floating">
-                                                <input type="password" class="form-control" id="passwd" name="passwd" placeholder="Password" required>
-                                                <label for="password">Password</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <button class="btn btn-primary w-100 py-3" type="submit">Register</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                <div class="position-relative mx-auto" style="max-width: 400px;">
+                    <form action="loginQuery.php" method="post" enctype="multipart/form-data">
+                    <input class="form-control border-primary w-100 py-3 ps-4 pe-5" type="text" id="username" name="username" placeholder="Username">
+                    <p></p>
+                    <input class="form-control border-primary w-100 py-3 ps-4 pe-5" type="password" id="passwd" name="passwd" placeholder="Password">
+                    <p></p>
+                    <button type="submit" class="btn btn-primary py-2 position-absolute">Login</button>
+                    <p></p>
+                    <button type="button" id="register-btn" class="btn btn-primary py-2 position-absolute end-0">Register</button>
+                    </form>
                 </div>
             </div>
         </div>
-
+        <!-- Service End -->
+        
 
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -266,16 +215,18 @@
         </div>
         <!-- Footer End -->
 
+
         <!-- Back to Top -->
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
     <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="lib/wow/wow.min.js"></script>
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/counterup/counterup.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
     <script src="lib/tempusdominus/js/moment.min.js"></script>
     <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
@@ -283,6 +234,11 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script>
+        document.getElementById('register-btn').addEventListener('click', function() {
+            window.location.href = 'register.php';
+        });
+    </script>
 </body>
 
 </html>

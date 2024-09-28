@@ -20,15 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dest_path = $uploadFileDir . $fileName;
 
             if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                echo 'File is successfully uploaded.';
             } else {
-                echo 'There was some error moving the file to upload directory.';
+
             }
         } else {
-            echo 'Upload failed. Allowed file types: jpg, jpeg, png, gif.';
+
         }
     } else {
-        echo 'No file uploaded or there was an upload error.';
+
     }
     if(isset($_POST['restaurant_name']) && isset($_POST['res_des']) && isset($_POST['meal_names']) && isset($_POST['meal_prices']) && isset($_POST['meal_des']) && !(empty($user_id))) {
         
@@ -56,18 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dest_patho = $uploadFileDiro . $fileNameo;
 
             if (move_uploaded_file($fileTmpPatho, $dest_patho)) {
-                echo "File $fileNameo is successfully uploaded.<br>";
-
                 addMealPhoto($meal_id[$index],$dest_patho);
-
                 header("location:restaurant.php?message=Saved!");
 
 
             } else {
-                echo "There was some error moving the file $fileNameo to the upload directory.<br>";
+                header("location:restaurant.php?message=Saved!");
             }
         } else {
-            echo "Upload failed for file $fileNameo. Allowed file types: jpg, jpeg, png, gif.<br>";
+            header("location:restaurant.php?message=Saved!");
         }
     
         }

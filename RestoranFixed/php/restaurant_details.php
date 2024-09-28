@@ -3,28 +3,20 @@
 session_start();
 include "functions/functions.php";
 
-if(isset($_GET['query'])){
-    $query = $_GET['query'];
-    $restaurants = searchRes($query);
-
-
-
-} elseif(isset($_GET['min_stars'])) { 
-    
-    $min_stars = $_GET['min_stars'];
-    if($min_stars == 0){
-        $restaurants = getAllRes();
-    }else{
-        $restaurants = filterRestaurants($min_stars);
-    }
-    
-
-
-} else{
-    $restaurants = getAllRes();
+$res_id = $_GET['id'];
+$user_id = $_SESSION['id'];
+$username = $_SESSION['username'];
+if(isset($_GET['searchbar'])){
+    $search = $_GET['searchbar'];
+    $meals = searchMeal($search,$res_id);
+}else {
+    $meals = getMealBy_id($res_id);
 }
+$comments = getCommentBy_id($res_id);
 
-
+if (empty($meals)){
+    echo "Sorry there is no meals for that restaurant";
+}
 
 
 
@@ -57,20 +49,137 @@ if(isset($_GET['query'])){
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    
 
     <style>
-        .fa-star {
+        * {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+:root {
+  font-size: 16px;
+}
+body {
+  color: black;
+  font-family: sans-serif;
+  font-size: 1rem;
+}
+.fa-star {
     color: lightgray; /* Default color for unselected stars */
 }
 
 .fa-star.checked {
     color: gold; /* Color for filled stars */
 }
+
+
+.wrapper {
+  max-width: 65ch;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.call-to-action-text {
+  margin: 2rem 0;
+  text-align: left;
+}
+.star-wrap {
+  width: max-content;
+  margin: 0 auto;
+  position: relative;
+}
+.star-label.hidden {
+  display: none;
+}
+.star-label {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+}
+@media (min-width: 840px) {
+  .star-label {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.star-shape {
+  background-color: gold;
+  width: 80%;
+  height: 80%;
+  /*star shaped cutout, works  best if it is applied to a square*/
+  /* from Clippy @ https://bennettfeely.com/clippy/ */
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+}
+
+/* make stars *after* the checked radio gray*/
+.star:checked + .star-label ~ .star-label .star-shape {
+  background-color: lightgray;
+}
+
+/*hide away the actual radio inputs*/
+.star {
+  position: fixed;
+  opacity: 0;
+  /*top: -90000px;*/
+  left: -90000px;
+}
+
+.star:focus + .star-label {
+  outline: 2px dotted black;
+}
+.skip-button {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 1rem;
+  position: absolute;
+  top: -2rem;
+  right: -1rem;
+  /*transform: translateY(-50%);*/
+  text-align: center;
+  line-height: 2rem;
+  font-size:2rem;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.skip-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+#skip-star:checked ~ .skip-button {
+  display: none;
+}
+#result {
+  text-align: center;
+  padding: 1rem 2rem;
+}
+.exp-link {
+  text-align: center;
+  padding: 1rem 2rem;
+ }
+.exp-link a{
+  color: lightgray;
+  text-decoration:underline;
+} 
     </style>
-
-
 </head>
 
 <body>
@@ -99,33 +208,33 @@ if(isset($_GET['query'])){
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -161,45 +270,130 @@ if(isset($_GET['query'])){
                     <h1 class="mb-5">Explore Our Popular Restaurants</h1>
                 </div>
 
-        <form class="mb-4" action="menu.php" method="GET">
-            <div class="input-group">
-                <input type="search" class="form-control" placeholder="Search for restaurants..." name="query">
-                <button class="btn btn-primary" type="submit">Search</button>
-            </div>
-        </form>
+                <form class="mb-4" action="restaurant_details.php" method="GET">
+                    <div class="input-group">
+                        <input type="hidden" name="id" value="<?php echo htmlspecialchars($res_id); ?>">
+                        <input type="search" class="form-control" placeholder="Search for meals..." name="searchbar">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
 
-        <form class="mb-4" action="menu.php" method="GET">
-            <div class="input-group">
-                <input type="number" class="form-control" placeholder="Minimum stars (1-10)" name="min_stars" min="0" max="10">
-                <button class="btn btn-primary" type="submit">Filter</button>
-            </div>
-        </form>
+
                 <div class="row g-4">
-                    <?php foreach ($restaurants as $restaurant): ?>
+                    <?php foreach ($meals as $meal): ?>
                     <div class="col-lg-4 col-md-6">
-                        <a href="restaurant_details.php?id=<?php echo $restaurant['id']; ?>" class="text-decoration-none">
                             <div class="card restaurant-card">
-                                <img src="<?php echo htmlspecialchars($restaurant['logo_path']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($restaurant['res_name']); ?>">
+                                <img src="<?php echo htmlspecialchars($meal['meal_logo']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($meal['meal_name']); ?>">
                                 <div class="card-body">
-                                    <h5 class="card-title"><?php echo htmlspecialchars($restaurant['res_name']); ?></h5>
-                                    <p class="card-text"><?php echo htmlspecialchars($restaurant['res_des']); ?></p>
+                                    <h5 class="card-title"><?php echo htmlspecialchars($meal['meal_name']); ?></h5>
+                                    <p class="card-text"><?php echo htmlspecialchars($meal['meal_des']); ?></p>
+                                    <?php if (isset($meal['meal_discount']) && $meal['meal_discount'] > 0): ?>
+                                                               
+                                                                <del><?php echo $meal['meal_price'] ?> ₺</del> 
+                                                               
+                                                                <span class="discounted-price">
+                                                                    <?php
+                                                                        $discounted_price = $meal['meal_price'] - ($meal['meal_price'] * $meal['meal_discount'] / 100);?>
+                                                                        <p class="card-text"><?php echo htmlspecialchars($discounted_price); ?> ₺</p>
+
+                                                                </span>
+                                                            <?php else: ?>
+                                                               
+                                                                <p class="card-text"><?php echo htmlspecialchars($meal['meal_price']); ?> ₺</p>
+                                                            <?php endif; ?>
+                                </div>
+                                <div class="mt-auto d-flex justify-content-end">
+                                <form method="post" action="res_detailQuery.php?id=<?php echo $res_id ?>" enctype = "mutlipart/form-data">
+                                    <input type="hidden" name="meal_id" value="<?php echo htmlspecialchars($meal['id']); ?>">
+                                    <button type="submit" name="add_basket" class="btn btn-primary">Add to the Basket</button>
+                                </form>
+                               </div>
+                            </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+
+        <!-- Menu End -->
+
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h5 class="section-title ff-secondary text-center text-primary fw-normal">Share Your Opinions</h5>
+            <h1 class="mb-5">Comment Section</h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 offset-md-3 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="card border-0 shadow rounded-4">
+                    <div class="card-body p-4 p-sm-5">
+                        <form action="addcomment.php" method="post" enctype="multipart/form-data">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea type="textarea" class="form-control" id="comment" name="comment" placeholder="Enter Your Comment" required></textarea>
+                                        <input type="hidden" name="res_id" value="<?php echo htmlspecialchars($res_id); ?>">
+
+                                        <label for="comment" id="comment-label">Comment</label>
+                                    </div>
+                                </div>
+                                <div class="wrapper">
+                                    <form action="addcomment.php" name="star-rating-form">
+                                        <h3 id="title" class="call-to-action-text">Select a rating:</h3>
+                                        <div class="star-wrap">
+                                            <input class="star" checked type="radio" value="0" id="skip-star" name="star-radio" autocomplete="off" />
+                                            <label class="star-label hidden"></label>
+                                            <?php for ($i = 1; $i <= 10; $i++): ?>
+                                                <input class="star" type="radio" id="st-<?php echo $i; ?>" value="<?php echo $i; ?>" name="star-radio" autocomplete="off" />
+                                                <label class="star-label" for="st-<?php echo $i; ?>">
+                                                    <div class="star-shape"></div>
+                                                </label>
+                                            <?php endfor; ?>
+                                            <label class="skip-button" for="skip-star">&times;</label>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100 py-3" type="submit">Submit Comment</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+         <div class="container-xxl py-5">
+            <div class="container">
+                <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Comments</h5>
+                    <h1 class="mb-5">Comments</h1>
+                </div>
+
+                <div class="row g-4">
+                    <?php foreach ($comments as $comment): ?>
+                    <div class="col-lg-4 col-md-6">
+                            <div class="card restaurant-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Username:<?php echo htmlspecialchars($comment['username']); ?></h5>
+                                    <h5 class="card-text">Comment:<?php echo htmlspecialchars($comment['comment']); ?></h5>
                                     <div>
-                                        <?php $score = getAverageScore($restaurant['id'])  ?>
-                                            <?php for ($i = 1; $i <= $score; $i++): ?>
+                                            <?php for ($i = 1; $i <= $comment['score']; $i++): ?>
                                                 <span class="fa fa-star checked"></span>
                                             <?php endfor; ?>
-                                            <?php for ($j = 1; $j <= 10 - $score; $j++): ?>
+                                            <?php for ($j = 1; $j <= 10 - $comment['score']; $j++): ?>
                                                 <span class="fa fa-star"></span>
                                             <?php endfor; ?>
                                         </div>
+                                    </form>
                                 </div>
                             </div>
-                        </a>
                     </div>
                     <?php endforeach; ?>
-            </div>
+                </div>
 
-        <!-- Menu End -->
+ 
 
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -277,7 +471,6 @@ if(isset($_GET['query'])){
     <script src="lib/waypoints/waypoints.min.js"></script>
     <script src="lib/counterup/counterup.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-   
 
 
     <!-- Template Javascript -->

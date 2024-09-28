@@ -1,34 +1,36 @@
 <?php
 session_start();
+include "functions/functions.php";
 
-$user_id = $_SESSION["id"];
-$username = $_SESSION["username"];
-$fname = $_SESSION["fname"];
-$surname = $_SESSION["surname"];
-$balance = $_SESSION["balance"];
-$pp_path = $_SESSION["pp_path"];
-$rolee = $_SESSION["rolee"];
-
-
-if (empty($pp_path)){
-    $pp_path = "./uploaded_files/Default_pfp.jpg";
+if (!isset($_SESSION['id'])) {
+    header("location:index.php?message=You must be logged in to view your order history.");
 }
 
+$user_id = $_SESSION['id'];
 
+
+$orders = getAllOrdersForUser($user_id);
+
+$statusOrder = ['Pending', 'Processing', 'Completed', 'Cancelled'];
+$sortedOrders = [];
+
+foreach ($statusOrder as $status) {
+    $sortedOrders[$status] = array_filter($orders, function($order) use ($status) {
+        return $order['status'] === $status;
+    });
+}
 
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
+    <title>Restoran - Bootstrap Restaurant Template</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
-    <title>Profile - User</title>
 
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
@@ -36,7 +38,8 @@ if (empty($pp_path)){
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
+        rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
@@ -47,109 +50,17 @@ if (empty($pp_path)){
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
-
-    <style>
-        .profile-info {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .edit-icon {
-            display: none;
-            position: absolute;
-            top: 0;
-            right: 10px;
-            cursor: pointer;
-        }
-
-        .profile-info:hover .edit-icon {
-            display: inline-block;
-        }
-
-        .edit-mode {
-            display: block;
-        }
-
-        .normal-mode {
-            display: none;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .profile-image {
-            display: block;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .profile-image img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .file-upload {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .submit-btn {
-            display: none;
-            margin-top: 20px;
-        }
-    </style>
-
-    <script>
-        function handleRoleChange() {
-            var role = document.getElementById('role').textContent;
-            var usernameLabel = document.getElementById('username-label');
-            
-            if (role === 'Company') {
-                usernameLabel.textContent = 'Company Name';
-            } else {
-                usernameLabel.textContent = 'Username';
-            }
-        }
-
-        function enableEdit(field) {
-            const displayElement = document.getElementById(field + '-display');
-            const inputElement = document.getElementById(field + '-input');
-            const submitButton = document.getElementById('submit-btn');
-
-            if (inputElement.classList.contains('normal-mode')) {
-                inputElement.classList.remove('normal-mode');
-                inputElement.classList.add('edit-mode');
-                displayElement.style.display = 'none';
-                submitButton.style.display = 'block';
-            } else {
-                inputElement.classList.add('normal-mode');
-                inputElement.classList.remove('edit-mode');
-                displayElement.style.display = 'block';
-                displayElement.innerText = inputElement.value;
-                submitButton.style.display = 'none';
-            }
-        }
-
-        function handleFileChange(event) {
-            const file = event.target.files[0];
-            const image = document.getElementById('profile-image');
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                image.src = e.target.result;
-                document.getElementById('submit-btn').style.display = 'block';
-            };
-
-            reader.readAsDataURL(file);
-        }
-    </script>
 </head>
 
-<body onload="handleRoleChange()">
+<body>
     <div class="container-xxl bg-white p-0">
+         <!-- Spinner Start -->
+         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <!-- Spinner End -->
 
 
         <!-- Navbar & Hero Start -->
@@ -167,33 +78,33 @@ if (empty($pp_path)){
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -225,74 +136,42 @@ if (empty($pp_path)){
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Profile</h5>
-                    <h1 class="mb-5">Your Profile Information</h1>
+                    <h5 class="section-title text-primary">Your Orders</h5>
+                    <h1 class="mb-5">Your Orders</h1>
                 </div>
-                <div class="row g-4">
-                    <div class="col-md-6 offset-md-3 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="card border-0 shadow rounded-4">
-                            <div class="card-body p-4 p-sm-5">
-                                <form action="profileQuery.php" method="post" enctype="multipart/form-data">
-                                <div class="row g-3">
 
-                                    <div class="col-md-12 profile-image">
-                                        <img id="profile-image" src="<?php echo $pp_path ?>" alt="Profile Image">
-                                        <input type="file" id="profile-image-upload" name="pp_path" class="file-upload" onchange="handleFileChange(event)">
-                                    </div>
-
-
-                                    <div class="col-md-12">
-                                        <div class="profile-info">
-                                            <strong>Role:</strong>
-                                            <p id="role" name="role"><?php echo $rolee?></p>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="profile-info">
-                                            <strong>First Name:</strong>
-                                            <span id="first-name-display"><?php echo $fname ?></span>
-                                            <i class="edit-icon fas fa-edit" onclick="enableEdit('first-name')"></i>
-                                            <input type="text" id="first-name-input" name="fname" class="normal-mode" value="<?php echo $fname ?>">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="profile-info">
-                                            <strong>Last Name:</strong>
-                                            <span id="last-name-display"><?php echo $surname ?></span>
-                                            <i class="edit-icon fas fa-edit" onclick="enableEdit('last-name')"></i>
-                                            <input type="text" id="last-name-input" name="surname" class="normal-mode" value="<?php echo $surname ?>">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-12">
-                                        <div class="profile-info">
-                                            <strong id="username-label">Username</strong>
-                                            <span id="username-display"><?php echo $username ?></span>
-                                            <i class="edit-icon fas fa-edit" onclick="enableEdit('username')"></i>
-                                            <input type="text" id="username-input" name="username" class="normal-mode" value="<?php echo $username ?>">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" id="submit-btn" name="submit"class="btn btn-primary submit-btn">Submit</button>
-                                </form>
-                                <form action="profileQuery.php" method = "post" enctype ="multipart/form-data">
-                                <div class="position-relative mx-auto" style="max-width: 400px;">
-                            <input class="form-control border-primary w-100 py-3 ps-4 pe-5" name="balance"type="text" placeholder="Add Balance">
-                            <p>Your Balance is <?php echo $balance;?>₺</p>
-                            <button type="submit" name="balance_user_id" value="<?php echo $user_id ?>" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">Add Balance</button>
-                                </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
+                <div class="container mt-5">
+        <h1>Your Order History</h1>
+        
+        <?php foreach ($statusOrder as $status): ?>
+            <h3><?php echo htmlspecialchars($status); ?> Orders</h3>
+            <?php if (empty($sortedOrders[$status])): ?>
+                <p>No <?php echo strtolower($status); ?> orders found.</p>
+            <?php else: ?>
+                <table class="table table-bordered mb-4">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Order Date</th>
+                            <th>Total Price</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($sortedOrders[$status] as $order): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($order['id']); ?></td>
+                                <td><?php echo htmlspecialchars($order['order_date']); ?></td>
+                                <td><?php echo htmlspecialchars($order['total_price']); ?> ₺</td>
+                                <td><?php echo htmlspecialchars($order['notes']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </div>
+        
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-5">
@@ -357,7 +236,21 @@ if (empty($pp_path)){
             </div>
         </div>
         <!-- Footer End -->
+
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/counterup/counterup.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
 </body>
 
 </html>

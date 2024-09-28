@@ -6,6 +6,7 @@ $is_company = isset($_SESSION['company_id']) ? $_SESSION['company_id'] : 'Not a 
 $user_id = $_SESSION['id'];
 $pp_path = $_SESSION["pp_path"];
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
@@ -23,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                echo 'File is successfully uploaded.';
+                
                 $pp_path = $dest_path;
             } else {
                 echo 'Error moving the file to the upload directory.';
@@ -49,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
 
         if ($is_company !== "Not a Company") {
-            updateCompany($username, $fname, $surname, $user_id, $pp_path);
+            updateUser($username, $fname, $surname, $user_id, $pp_path);
             $_SESSION['pp_path'] = $pp_path;
             $_SESSION["username"] = $username;
             $_SESSION["fname"] = $fname;
@@ -71,7 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $balance = $_POST['balance'];
         $balance_user_id = $_POST['balance_user_id'];
         addbalance($balance, $balance_user_id);
-        $_SESSION['balance'] = $balance;
+        $old_balance = $_SESSION['balance'];
+        $_SESSION['balance'] = $balance + $old_balance;
         header("location:profile.php?message=BalanceUpdated");
         exit;
     }

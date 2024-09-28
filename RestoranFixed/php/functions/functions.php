@@ -1090,5 +1090,16 @@ function addbalance($balance,$balance_user_id){
     $statement->execute();
 }
 
+function addmealquery($user_id,$restaurant_id,$meal_name,$meal_price,$meal_description,$fileDestination){
+    include "db.php";
+
+    $query = "INSERT INTO meals (company_id,res_id, meal_name, meal_price, meal_des, meal_logo) VALUES (:company_id,:res_id, :meal_name, :meal_price, :meal_des, :meal_logo)";
+
+    $statement = $pdo->prepare($query);
+
+    $statement->execute([':company_id'=> $user_id,':res_id' => $restaurant_id,':meal_name' => $meal_name, ':meal_price' => $meal_price,':meal_des' => $meal_description,':meal_logo' => $fileDestination]);
+
+}
+
 
 ?>

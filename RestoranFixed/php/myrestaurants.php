@@ -175,33 +175,33 @@ $resNum = getResNum($user_id);
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && ($_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin")  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
-                            echo '<a href="about.html" class="nav-item nav-link">About</a>';
+                            echo '';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && ($_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin") ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                    } elseif(isset($_SESSION['rolee']) && ($_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin") ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -388,7 +388,7 @@ $resNum = getResNum($user_id);
                     <div class="col-md-12 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="card border-0 shadow rounded-4">
                             <div class="card-body p-4 p-sm-5">
-                                <form action="myrestaurantsQuery.php" method="post" enctype="multipart/form-data">
+                                <form action="addmealquery.php" method="post" enctype="multipart/form-data">
 
                                     <div class="mb-3">
                                         <label for="restaurant" class="form-label">Select Restaurant</label>
@@ -418,9 +418,9 @@ $resNum = getResNum($user_id);
 
                                     <div class="mb-3">
                                         <label for="meal-photo" class="form-label">Meal Photo</label>
-                                        <input type="file" id="meal-photo" name="meal_logo" class="form-control" required>
+                                        <input type="file" id="meal-photo" name="update_meal_logo" class="form-control" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary mt-2">Submit</button>
+                                    <button type="submit" value="" class="btn btn-primary mt-2">Submit</button>
                                 </form>
                             </div>
                         </div>

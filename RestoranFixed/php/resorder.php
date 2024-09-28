@@ -1,7 +1,42 @@
 <?php
+
 session_start();
+include "functions/functions.php";
+
+if (!isset($_SESSION['company_id'])) {
+    header("location:index.php?message=You are not a business type user.");
+}
+
+$company_id = $_SESSION['company_id'];
+
+$res_ids = getResComp($company_id);
+
+$allPendingOrders = getAllOpenPendingOrders();
+$allClosedOrders = getAllClosedOrders();
+
+$orders = filterOrdersByResIds($allPendingOrders, $res_ids);
+$closedorders = filterOrdersByResIds($allClosedOrders, $res_ids);
+
+$groupedOrders = [];
+foreach ($orders as $order) {
+    $groupedOrders[$order['order_id']]['meals'][] = $order['meal_name'];
+    $groupedOrders[$order['order_id']]['quantity'][] = $order['quantity'];
+    $groupedOrders[$order['order_id']]['total_price'] = $order['total_price'];
+    $groupedOrders[$order['order_id']]['notes'] = $order['notes'];
+    $groupedOrders[$order['order_id']]['status'] = $order['status'];
+}
+$groupedclosedOrders = [];
+foreach ($closedorders as $closedorder) {
+    $groupedclosedOrders[$closedorder['order_id']]['meals'][] = $closedorder['meal_name'];
+    $groupedclosedOrders[$closedorder['order_id']]['quantity'][] = $closedorder['quantity'];
+    $groupedclosedOrders[$closedorder['order_id']]['total_price'] = $closedorder['total_price'];
+    $groupedclosedOrders[$closedorder['order_id']]['notes'] = $closedorder['notes'];
+    $groupedclosedOrders[$closedorder['order_id']]['status'] = $closedorder['status'];
+}
+
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,16 +53,12 @@ session_start();
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
+        rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -38,8 +69,8 @@ session_start();
 
 <body>
     <div class="container-xxl bg-white p-0">
-        <!-- Spinner Start -->
-        <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+         <!-- Spinner Start -->
+         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
@@ -62,33 +93,33 @@ session_start();
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -106,17 +137,10 @@ session_start();
                     ?>
                 </div>
             </nav>
-
             <div class="container-xxl py-5 bg-dark hero-header mb-5">
                 <div class="container my-5 py-5">
                     <div class="row align-items-center g-5">
-                        <div class="col-lg-6 text-center text-lg-start">
-                            <h1 class="display-3 text-white animated slideInLeft">Enjoy Our<br>Delicious Meal</h1>
-                            <p class="text-white animated slideInLeft mb-4 pb-2">Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit. Aliqu diam amet diam et eos. Clita erat ipsum et lorem et sit, sed stet lorem sit clita duo justo magna dolore erat amet</p>
-                        </div>
-                        <div class="col-lg-6 text-center text-lg-end overflow-hidden">
-                            <img class="img-fluid" src="img/hero.png" alt="">
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -124,91 +148,114 @@ session_start();
         <!-- Navbar & Hero End -->
 
 
-        <!-- Service Start -->
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Our Services</h5>
-                    <h1 class="mb-5">Explore Our Services</h1>
+                    <h5 class="section-title text-primary">Open Orders</h5>
+                    <h1 class="mb-5">Manage Pending Orders</h1>
                 </div>
+
                 <div class="row g-4">
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-user-tie text-primary mb-4"></i>
-                                <h5>Master Chefs</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.3s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-utensils text-primary mb-4"></i>
-                                <h5>Quality Food</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.5s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-cart-plus text-primary mb-4"></i>
-                                <h5>Online Order</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.7s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-headset text-primary mb-4"></i>
-                                <h5>24/7 Service</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-user-tie text-primary mb-4"></i>
-                                <h5>Master Chefs</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.3s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-utensils text-primary mb-4"></i>
-                                <h5>Quality Food</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.5s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-cart-plus text-primary mb-4"></i>
-                                <h5>Online Order</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.7s">
-                        <div class="service-item rounded pt-3">
-                            <div class="p-4">
-                                <i class="fa fa-3x fa-headset text-primary mb-4"></i>
-                                <h5>24/7 Service</h5>
-                                <p>Diam elitr kasd sed at elitr sed ipsum justo dolor sed clita amet diam</p>
-                            </div>
-                        </div>
-                    </div>
+                    <?php if (empty($groupedOrders)): ?>
+                        <p>No open orders available at the moment.</p>
+                    <?php else: ?>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Meals</th>
+                                    <th>Quantity</th>
+                                    <th>Total Price</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($groupedOrders as $order_id => $orderDetails): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($order_id); ?></td>
+                                        <td><?php echo htmlspecialchars(implode(', ', $orderDetails['meals'])); ?></td>
+                                        <td><?php echo htmlspecialchars(implode(', ', $orderDetails['quantity'])); ?></td>
+                                        <td><?php echo htmlspecialchars($orderDetails['total_price']); ?> ₺</td>
+                                        <td><?php echo htmlspecialchars($orderDetails['notes']); ?></td>
+                                        <td><?php echo htmlspecialchars($orderDetails['status']); ?></td>
+                                        <td>
+                                            <form action="resorderQuery.php" method="POST">
+                                                <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
+                                                <select name="order_status" class="form-select">
+                                                    <option value="pending" <?php echo $orderDetails['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                    <option value="processing">Processing</option>
+                                                    <option value="completed">Completed</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-primary mt-2">Update</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
-        <!-- Service End -->
-        
+
+
+
+        <div class="container-xxl py-5">
+            <div class="container">
+                <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+                    <h5 class="section-title text-primary">Closed Orders</h5>
+                    <h1 class="mb-5">Manage Closed Orders</h1>
+                </div>
+
+                <div class="row g-4">
+                    <?php if (empty($groupedclosedOrders)): ?>
+                        <p>No closed orders available at the moment.</p>
+                    <?php else: ?>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Meals</th>
+                                    <th>Quantity</th>
+                                    <th>Total Price</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($groupedclosedOrders as $closedorder_id => $closedorderDetails): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($closedorder_id); ?></td>
+                                        <td><?php echo htmlspecialchars(implode(', ', $closedorderDetails['meals'])); ?></td>
+                                        <td><?php echo htmlspecialchars(implode(', ', $closedorderDetails['quantity'])); ?></td>
+                                        <td><?php echo htmlspecialchars($closedorderDetails['total_price']); ?> ₺</td>
+                                        <td><?php echo htmlspecialchars($closedorderDetails['notes']); ?></td>
+                                        <td><?php echo htmlspecialchars($closedorderDetails['status']); ?></td>
+                                        <td>
+                                            <form action="resorderQuery.php" method="POST">
+                                                <input type="hidden" name="order_id" value="<?php echo $closedorder_id; ?>">
+                                                <select name="order_status" class="form-select">
+                                                    <option value="pending" <?php echo $closedorderDetails['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                    <option value="processing">Processing</option>
+                                                    <option value="completed">Completed</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-primary mt-2">Update</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -275,8 +322,6 @@ session_start();
         </div>
         <!-- Footer End -->
 
-
-        <!-- Back to Top -->
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
@@ -288,9 +333,6 @@ session_start();
     <script src="lib/waypoints/waypoints.min.js"></script>
     <script src="lib/counterup/counterup.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>

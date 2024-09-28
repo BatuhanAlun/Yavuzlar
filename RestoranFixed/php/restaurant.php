@@ -1,24 +1,12 @@
 <?php
 session_start();
-include "functions/functions.php";
-
-if (!isset($_SESSION['id'])) {
-    header("location:index.php?message=You must be logged in to view your order history.");
-}
-
-$user_id = $_SESSION['id'];
 
 
-$orders = getAllOrdersForUser($user_id);
+$user_id = $_SESSION["id"];
+$username = $_SESSION["username"];
+$rolee = $_SESSION["rolee"];
 
-$statusOrder = ['Pending', 'Processing', 'Completed', 'Cancelled'];
-$sortedOrders = [];
 
-foreach ($statusOrder as $status) {
-    $sortedOrders[$status] = array_filter($orders, function($order) use ($status) {
-        return $order['status'] === $status;
-    });
-}
 
 ?>
 
@@ -27,10 +15,10 @@ foreach ($statusOrder as $status) {
 
 <head>
     <meta charset="utf-8">
-    <title>Restoran - Bootstrap Restaurant Template</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
+    <title>Create Restaurant</title>
 
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
@@ -38,8 +26,7 @@ foreach ($statusOrder as $status) {
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
@@ -50,17 +37,43 @@ foreach ($statusOrder as $status) {
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .form-control {
+            margin-bottom: 15px;
+        }
+        .meal-entry {
+            margin-bottom: 10px;
+        }
+        .meal-entry input {
+            margin-right: 10px;
+        }
+    </style>
+
+    <script>
+        function addMeal() {
+            var mealContainer = document.getElementById('meal-container');
+            var mealEntry = document.createElement('div');
+            mealEntry.classList.add('meal-entry');
+            mealEntry.innerHTML = `
+                <input type="text" name="meal_names[]" placeholder="Meal Name" class="form-control" required>
+                <input type="number" name="meal_prices[]" placeholder="Price" class="form-control" required>
+                <input type="text" name="meal_des[]" placeholder="Description" class="form-control" required>
+                <input type="file" name="meal_logo[]" placeholder="Meal Photo" class="form-control" required>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeMeal(this)">Remove</button>
+            `;
+            mealContainer.appendChild(mealEntry);
+        }
+
+        function removeMeal(button) {
+            button.parentElement.remove();
+        }
+    </script>
 </head>
 
 <body>
     <div class="container-xxl bg-white p-0">
-         <!-- Spinner Start -->
-         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <!-- Spinner End -->
+
 
 
         <!-- Navbar & Hero Start -->
@@ -78,33 +91,33 @@ foreach ($statusOrder as $status) {
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
-                     echo '';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                     echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -136,42 +149,58 @@ foreach ($statusOrder as $status) {
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title text-primary">Your Orders</h5>
-                    <h1 class="mb-5">Your Orders</h1>
+                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Create Restaurant</h5>
+                    <h1 class="mb-5">Add Your Restaurant Details</h1>
                 </div>
+                <div class="row g-4">
+                    <div class="col-md-8 offset-md-2 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="card border-0 shadow rounded-4">
+                            <div class="card-body p-4 p-sm-5">
+                                <form action="restaurantQuery.php" method="post" enctype="multipart/form-data">
+                                    <div class="row g-3">
 
-                <div class="container mt-5">
-        <h1>Your Order History</h1>
-        
-        <?php foreach ($statusOrder as $status): ?>
-            <h3><?php echo htmlspecialchars($status); ?> Orders</h3>
-            <?php if (empty($sortedOrders[$status])): ?>
-                <p>No <?php echo strtolower($status); ?> orders found.</p>
-            <?php else: ?>
-                <table class="table table-bordered mb-4">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Order Date</th>
-                            <th>Total Price</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($sortedOrders[$status] as $order): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($order['id']); ?></td>
-                                <td><?php echo htmlspecialchars($order['order_date']); ?></td>
-                                <td><?php echo htmlspecialchars($order['total_price']); ?> ₺</td>
-                                <td><?php echo htmlspecialchars($order['notes']); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    </div>
-        
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="restaurant-name">Restaurant Name:</label>
+                                                <input type="text" id="restaurant-name" name="restaurant_name" class="form-control" placeholder="Enter Restaurant Name" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="restaurant-name">Restaurant Description:</label>
+                                                <input type="text" id="res_des" name="res_des" class="form-control" placeholder="Enter Description" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="restaurant-logo">Restaurant Logo:</label>
+                                                <input type="file" id="restaurant-logo" name="restaurant_logo" class="form-control" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="meal-container">Meals:</label>
+                                                <div id="meal-container">
+
+                                                </div>
+                                                <button type="button" class="btn btn-primary" onclick="addMeal()">Add Meal</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" id="submit-btn" name="submit" class="btn btn-primary submit-btn mt-3">Create Restaurant</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
             <div class="container py-5">
@@ -236,21 +265,7 @@ foreach ($statusOrder as $status) {
             </div>
         </div>
         <!-- Footer End -->
-
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
 </body>
 
 </html>

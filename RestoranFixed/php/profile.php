@@ -1,64 +1,34 @@
 <?php
-
 session_start();
-include "functions/functions.php";
+
+$user_id = $_SESSION["id"];
+$username = $_SESSION["username"];
+$fname = $_SESSION["fname"];
+$surname = $_SESSION["surname"];
+$balance = $_SESSION["balance"];
+$pp_path = $_SESSION["pp_path"];
+$rolee = $_SESSION["rolee"];
 
 
-$user_id = $_SESSION['id'];
-$balance = $_SESSION['balance'];
-
-
-$meals = getMealBasket($user_id);
-$coupons = getCoupon($user_id);
-$total_price = 0;
-
-
-foreach ($meals as $meal) {
-    $total_price += $meal['meal_price'] * $meal['quantity'];
-    $first_price = $total_price;
+if (empty($pp_path)){
+    $pp_path = "./uploaded_files/Default_pfp.jpg";
 }
 
 
-if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
-    $coupon = $_POST['coupon'];
-    $coupon_found = false;
-
-    if (in_array($coupon, array_column($coupons, 'c_name'))) {
-        foreach ($coupons as $cop) {
-            if ($cop['c_name'] == $coupon) {
-                $c_id = $cop['c_id'];
-                $c_percentage = $cop['percentage'];
-                $coupon_found = true;
-                break;
-            }
-        }
-
-        if ($coupon_found) {
-            $discount_amount = $total_price * ($c_percentage);
-            $total_price -= $discount_amount;
-            $discount_message = "<p class='text-success'>Discount applied! You saved " . number_format($discount_amount, 2) . " ₺</p>";
-        } else {
-            $discount_message = "<p class='text-danger'>Something went wrong with the coupon.</p>";
-        }
-    } elseif (isset($_POST['remove_coupon'])) {
-        $total_price = $first_price;
-        $discount_message = "<p class='text-info'>Coupon removed. Price reverted to original.</p>";
-    } else {
-        $discount_message = "<p class='text-danger'>Invalid Coupon</p>";
-}}
 
 ?>
+
 
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-<meta charset="utf-8">
-    <title>Yavuzlar Restoran APP</title>
+    <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="" name="keywords">
     <meta content="" name="description">
+    <title>Profile - User</title>
 
     <!-- Favicon -->
     <link href="img/favicon.ico" rel="icon">
@@ -72,53 +42,114 @@ if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Libraries Stylesheet -->
-    <link href="lib/animate/animate.min.css" rel="stylesheet">
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
-
     <!-- Customized Bootstrap Stylesheet -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
-    <meta charset="utf-8">
 
-    <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
-
-    <!-- Google Web Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&family=Pacifico&display=swap"
-        rel="stylesheet">
-
-    <!-- Icon Font Stylesheet -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="css/style.css" rel="stylesheet">
     <style>
-        .custom-blue-bg {
-    background-color: #007bff; /* Replace this with your desired blue color */
-}
+        .profile-info {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .edit-icon {
+            display: none;
+            position: absolute;
+            top: 0;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .profile-info:hover .edit-icon {
+            display: inline-block;
+        }
+
+        .edit-mode {
+            display: block;
+        }
+
+        .normal-mode {
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .profile-image {
+            display: block;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .profile-image img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .file-upload {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            display: none;
+            margin-top: 20px;
+        }
     </style>
+
+    <script>
+        function handleRoleChange() {
+            var role = document.getElementById('role').textContent;
+            var usernameLabel = document.getElementById('username-label');
+            
+            if (role === 'Company') {
+                usernameLabel.textContent = 'Company Name';
+            } else {
+                usernameLabel.textContent = 'Username';
+            }
+        }
+
+        function enableEdit(field) {
+            const displayElement = document.getElementById(field + '-display');
+            const inputElement = document.getElementById(field + '-input');
+            const submitButton = document.getElementById('submit-btn');
+
+            if (inputElement.classList.contains('normal-mode')) {
+                inputElement.classList.remove('normal-mode');
+                inputElement.classList.add('edit-mode');
+                displayElement.style.display = 'none';
+                submitButton.style.display = 'block';
+            } else {
+                inputElement.classList.add('normal-mode');
+                inputElement.classList.remove('edit-mode');
+                displayElement.style.display = 'block';
+                displayElement.innerText = inputElement.value;
+                submitButton.style.display = 'none';
+            }
+        }
+
+        function handleFileChange(event) {
+            const file = event.target.files[0];
+            const image = document.getElementById('profile-image');
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                image.src = e.target.result;
+                document.getElementById('submit-btn').style.display = 'block';
+            };
+
+            reader.readAsDataURL(file);
+        }
+    </script>
 </head>
 
-<body>
+<body onload="handleRoleChange()">
     <div class="container-xxl bg-white p-0">
-         <!-- Spinner Start -->
-         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <!-- Spinner End -->
 
 
         <!-- Navbar & Hero Start -->
@@ -136,33 +167,33 @@ if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
                         <a href="index.php" class="nav-item nav-link active">Home</a>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                             echo '<a href="myrestaurants.php" class="nav-item nav-link">My Restaurants</a>';
-                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                        } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                             echo '<a href="basket.php" class="nav-item nav-link">Basket</a>';
                         }else{
                             echo '<a href="about.html" class="nav-item nav-link">About</a>';
                         }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="restaurant.php" class="nav-item nav-link">Add Restaurant</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin"  ){
                         echo '<a href="orderhistory.php" class="nav-item nav-link">Orders</a>';
                     }else{
                         echo '<a href="booking.html" class="nav-item nav-link">About</a>';
                     }?>
                         <?php if(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "company" ){
                      echo '<a href="resorder.php" class="nav-item nav-link">Orders</a>';
-                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" ){
+                    } elseif(isset($_SESSION['rolee']) && $_SESSION['rolee'] == "user" || $_SESSION['rolee'] == "admin" ){
                         echo '<a href="menu.php" class="nav-item nav-link">Menu</a>';
                     }else{
                         echo '';
                     }?>
-                        <div class="nav-item dropdown">
+                        <!-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0">
                                 <a href="booking.html" class="dropdown-item">Booking</a>
                                 <a href="team.html" class="dropdown-item">Our Team</a>
                                 <a href="testimonial.html" class="dropdown-item">Testimonial</a>
                             </div>
-                        </div>
+                        </div> -->
                         <?php if(isset($_SESSION['username'])){
                      echo '<a href="logout.php" class="nav-item nav-link">LogOut</a>';
                     }?>
@@ -189,71 +220,78 @@ if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
             </div>
         </div>
         <!-- Navbar & Hero End -->
-        <!-- Menu Start -->
+
+
         <div class="container-xxl py-5">
-            
             <div class="container">
                 <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
-                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Our Restaurants</h5>
-                    <h1 class="mb-5">Explore Our Popular Restaurants</h1>
+                    <h5 class="section-title ff-secondary text-center text-primary fw-normal">Profile</h5>
+                    <h1 class="mb-5">Your Profile Information</h1>
                 </div>
-                
                 <div class="row g-4">
-                    <?php foreach ($meals as $meal): ?>
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card restaurant-card">
-                            <img src="<?php echo htmlspecialchars($meal['meal_logo']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($meal['meal_name']); ?>">
-                            <div class="card-body">
-                                <h5 class="card-title"><?php echo htmlspecialchars($meal['meal_name']); ?></h5>
-                                <p class="card-text"><?php echo htmlspecialchars($meal['meal_des']); ?></p>
-                                <p class="card-text">Price: <?php echo htmlspecialchars($meal['meal_price']); ?> ₺</p>
-                                <p class="card-text">Quantity: <?php echo htmlspecialchars($meal['quantity']); ?></p>
+                    <div class="col-md-6 offset-md-3 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="card border-0 shadow rounded-4">
+                            <div class="card-body p-4 p-sm-5">
+                                <form action="profileQuery.php" method="post" enctype="multipart/form-data">
+                                <div class="row g-3">
+
+                                    <div class="col-md-12 profile-image">
+                                        <img id="profile-image" src="<?php echo $pp_path ?>" alt="Profile Image">
+                                        <input type="file" id="profile-image-upload" name="pp_path" class="file-upload" onchange="handleFileChange(event)">
+                                    </div>
+
+
+                                    <div class="col-md-12">
+                                        <div class="profile-info">
+                                            <strong>Role:</strong>
+                                            <p id="role" name="role"><?php echo $rolee?></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="profile-info">
+                                            <strong>First Name:</strong>
+                                            <span id="first-name-display"><?php echo $fname ?></span>
+                                            <i class="edit-icon fas fa-edit" onclick="enableEdit('first-name')"></i>
+                                            <input type="text" id="first-name-input" name="fname" class="normal-mode" value="<?php echo $fname ?>">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="profile-info">
+                                            <strong>Last Name:</strong>
+                                            <span id="last-name-display"><?php echo $surname ?></span>
+                                            <i class="edit-icon fas fa-edit" onclick="enableEdit('last-name')"></i>
+                                            <input type="text" id="last-name-input" name="surname" class="normal-mode" value="<?php echo $surname ?>">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <div class="profile-info">
+                                            <strong id="username-label">Username</strong>
+                                            <span id="username-display"><?php echo $username ?></span>
+                                            <i class="edit-icon fas fa-edit" onclick="enableEdit('username')"></i>
+                                            <input type="text" id="username-input" name="username" class="normal-mode" value="<?php echo $username ?>">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" id="submit-btn" name="submit"class="btn btn-primary submit-btn">Submit</button>
+                                </form>
+                                <form action="profileQuery.php" method = "post" enctype ="multipart/form-data">
+                                <div class="position-relative mx-auto" style="max-width: 400px;">
+                            <input class="form-control border-primary w-100 py-3 ps-4 pe-5" name="balance"type="text" placeholder="Add Balance">
+                            <p>Your Balance is <?php echo $balance;?>₺</p>
+                            <button type="submit" name="balance_user_id" value="<?php echo $user_id ?>" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">Add Balance</button>
+                                </div>
+                                </form>
                             </div>
                         </div>
-                    </div>
-                    <?php endforeach; ?>
-
-                    <div class="text-center mt-5">
-                        <h3>Total Price for All Meals: <?php echo htmlspecialchars($first_price); ?> ₺</h3>
-                    </div>
-
-                    <div class="text-center mt-5">
-                        <h3>Your Balance Is: <?php echo htmlspecialchars($balance); ?> ₺</h3>
-                    </div>
-
-                    
-                    <div class="text-center mt-4">
-                        <form method="post" action="basket.php" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label for="coupon">Enter Coupon Code:</label>
-                                <input type="text" name="coupon" id="coupon" class="form-control" placeholder="Coupon Code" style="max-width: 300px; margin: 0 auto;">
-                                <button type="submit" name="use_coupon" class="btn btn-primary mt-3">Use Coupon</button>
-                                <button type="submit" name="remove_coupon" class="btn btn-secondary mt-3">Remove Coupon</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    
-                    <?php if (isset($discount_message)) echo $discount_message; ?>
-
-                    
-                    <div class="text-center mt-4">
-                        <h3>Final Price after Discount: <?php echo number_format($total_price, 2); ?> ₺</h3>
-                    </div>
-
-                    
-                    <div class="text-center mt-3">
-                        <form method="post" action="basketQuery.php">
-                            <input type="hidden" name="c_id" value="<?php echo htmlspecialchars($c_id) ?>">
-                            <textarea name="note" id="note" placeholder="Please add your note."></textarea>
-                            <button type="submit" name="order_now" class="btn btn-primary mt-3">Order Now</button>
-                            <input type="hidden" name="final_price" value="<?php echo htmlspecialchars($total_price);?>">
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Menu End -->
+
 
         <!-- Footer Start -->
         <div class="container-fluid bg-dark text-light footer pt-5 mt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -319,23 +357,7 @@ if (isset($_POST['use_coupon']) && isset($_POST['coupon'])) {
             </div>
         </div>
         <!-- Footer End -->
-
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/wow/wow.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/counterup/counterup.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-   
-
-
-    <!-- Template Javascript -->
-    <script src="js/main.js"></script>
 </body>
 
 </html>

@@ -2,7 +2,7 @@ services:
   php-apache:
     build:
       context: .
-    container_name: php-apache
+    container_name: php-apach
     ports:
       - "8080:80"
     volumes:
@@ -12,14 +12,14 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: mysql-database
+    container_name: mysql-databas
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: php_proje
       MYSQL_USER: regular
       MYSQL_PASSWORD: Pass_word
     ports:
-      - "3307:3306"
+      - "3310:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
