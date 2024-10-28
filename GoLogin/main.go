@@ -157,7 +157,7 @@ func userLoop(index int) {
 		case 1:
 			changePasswd(index)
 		case 2:
-			os.Exit(0)
+			return
 		default:
 			fmt.Println("Wrong Selection!!")
 		}
@@ -198,7 +198,7 @@ func adminLoop() {
 			readLogs()
 
 		case 3:
-			os.Exit(0)
+			return
 		default:
 			fmt.Println("Wrong Input")
 		}
@@ -225,116 +225,130 @@ func main() {
 	if err != nil {
 		fmt.Println("Error on file:", err)
 	}
+	for {
+		fmt.Println("Welcome To Login System:")
+		fmt.Println("Enter 3 For Exit!")
+		fmt.Println("System Clock:", cTime.Format(time.RFC3339))
+		fmt.Scanln(&i)
 
-	fmt.Println("Welcome To Login System:")
-	fmt.Println("System Clock:", cTime.Format(time.RFC3339))
-	fmt.Scanln(&i)
-
-	if i == 0 {
-		fmt.Println("Welcome Admin!")
-		fmt.Println("Please Enter Your Username")
-		fmt.Scanln(&uname)
-		fmt.Println("Please Enter Your Password")
-		fmt.Scanln(&passwd)
-		success = isExist(uname)
-		if success == 0 {
-			loginSuccess = login(success, passwd)
-			if loginSuccess != 1 {
-				for j := 0; j < 2; j++ {
-					cTime = time.Now()
-					logEntry = cTime.Format(time.RFC3339) + " Wrong Password Entry by Admin" + "\n"
-					writeFile(logEntry)
-					fmt.Println("Wrong, password!")
-					fmt.Println("You left", 3-(j+1), "tries")
-					fmt.Println("Please Re-Enter Your Password")
-					fmt.Scanln(&passwd)
-					loginSuccess = login(success, passwd)
-					if loginSuccess == 1 {
-						//log entry
-						cTime = time.Now()
-						logEntry = cTime.Format(time.RFC3339) + " Successfull Entry by Admin" + "\n"
-						writeFile(logEntry)
-						adminLoop()
-					}
-				}
-				//log entry
-				cTime = time.Now()
-				logEntry = cTime.Format(time.RFC3339) + " Too Mant Incorrect Tries" + "\n"
-				writeFile(logEntry)
-
-				fmt.Println("Too many Incorrect Tries")
-				fmt.Print("Exiting...")
-				os.Exit(0)
-
-			} else {
-				cTime = time.Now()
-				logEntry = cTime.Format(time.RFC3339) + " Successfull Entry By Admin" + "\n"
-				writeFile(logEntry)
-				//log entry
-				adminLoop()
+		if i == 0 {
+			fmt.Println("Welcome Admin!")
+			fmt.Println("Please Enter Your Username")
+			fmt.Scanln(&uname)
+			fmt.Println("Please Enter Your Password")
+			fmt.Scanln(&passwd)
+			success = isExist(uname)
+			if uname != "admin" {
+				success = 1
 			}
-		} else {
-			cTime = time.Now()
-			logEntry = cTime.Format(time.RFC3339) + " Wrong Username" + "\n"
-			writeFile(logEntry)
-			//log entry
-			fmt.Println("Username Does Not Exist")
-			fmt.Println("Exiting...")
-		}
+			if success == 0 {
+				loginSuccess = login(success, passwd)
+				if loginSuccess != 1 {
+					for j := 0; j < 2; j++ {
+						cTime = time.Now()
+						logEntry = cTime.Format(time.RFC3339) + " Wrong Password Entry by Admin" + "\n"
+						writeFile(logEntry)
+						fmt.Println("Wrong, password!")
+						fmt.Println("You left", 3-(j+1), "tries")
+						fmt.Println("Please Re-Enter Your Password")
+						fmt.Scanln(&passwd)
+						loginSuccess = login(success, passwd)
+						if loginSuccess == 1 {
+							//log entry
+							cTime = time.Now()
+							logEntry = cTime.Format(time.RFC3339) + " Successfull Entry by Admin" + "\n"
+							writeFile(logEntry)
+							adminLoop()
+							j = 10
 
-	} else if i == 1 {
-		fmt.Println("Welcome User!")
-		fmt.Println("Please Enter Your Username")
-		fmt.Scanln(&uname)
-		fmt.Println("Please Enter Your Password")
-		fmt.Scanln(&passwd)
-		success = isExist(uname)
-		if success > 0 {
-			loginSuccess = login(success, passwd)
-			if loginSuccess != 1 {
-				for j := 0; j < 2; j++ {
+						} else if j == 1 {
+							//log entry
+							cTime = time.Now()
+							logEntry = cTime.Format(time.RFC3339) + " Too Mant Incorrect Tries" + "\n"
+							writeFile(logEntry)
+
+							fmt.Println("Too many Incorrect Tries")
+							fmt.Print("Exiting...")
+							os.Exit(0)
+
+						}
+					}
+
+				} else {
 					cTime = time.Now()
-					logEntry = cTime.Format(time.RFC3339) + " Wrong Password Entry by" + " " + users[success].Username + "\n"
+					logEntry = cTime.Format(time.RFC3339) + " Successfull Entry By Admin" + "\n"
 					writeFile(logEntry)
 					//log entry
-					fmt.Println("Wrong, password!")
-					fmt.Println("You left", 3-(j+1), "tries")
-					fmt.Println("Please Re-Enter Your Password")
-					fmt.Scanln(&passwd)
-					loginSuccess = login(success, passwd)
-					if loginSuccess == 1 {
-						cTime = time.Now()
-						logEntry = cTime.Format(time.RFC3339) + " Successfull Entry by" + " " + users[success].Username + "\n"
-						writeFile(logEntry)
-						//log entry
-						userLoop(success)
-					}
+					adminLoop()
 				}
-				cTime = time.Now()
-				logEntry = cTime.Format(time.RFC3339) + " Too Many incorrect tries by" + " " + users[success].Username + "\n"
-				writeFile(logEntry)
-				//log entry
-				fmt.Println("Too many Incorrect Tries")
-				fmt.Print("Exiting...")
-				os.Exit(0)
-
 			} else {
 				cTime = time.Now()
-				logEntry = cTime.Format(time.RFC3339) + " Successfull Entry by" + " " + users[success].Username + "\n"
+				logEntry = cTime.Format(time.RFC3339) + " Wrong Username" + "\n"
 				writeFile(logEntry)
-				//log enrty
-				userLoop(success)
+				//log entry
+				fmt.Println("Username Does Not Exist")
+				fmt.Println("Exiting...")
+			}
+
+		} else if i == 1 {
+			fmt.Println("Welcome User!")
+			fmt.Println("Please Enter Your Username")
+			fmt.Scanln(&uname)
+			fmt.Println("Please Enter Your Password")
+			fmt.Scanln(&passwd)
+			success = isExist(uname)
+			if success > 0 {
+				loginSuccess = login(success, passwd)
+				if loginSuccess != 1 {
+					for j := 0; j < 2; j++ {
+						cTime = time.Now()
+						logEntry = cTime.Format(time.RFC3339) + " Wrong Password Entry by" + " " + users[success].Username + "\n"
+						writeFile(logEntry)
+						//log entry
+						fmt.Println("Wrong, password!")
+						fmt.Println("You left", 3-(j+1), "tries")
+						fmt.Println("Please Re-Enter Your Password")
+						fmt.Scanln(&passwd)
+						loginSuccess = login(success, passwd)
+						if loginSuccess == 1 {
+							cTime = time.Now()
+							logEntry = cTime.Format(time.RFC3339) + " Successfull Entry by" + " " + users[success].Username + "\n"
+							writeFile(logEntry)
+							//log entry
+							userLoop(success)
+							j = 10
+						} else if j == 1 {
+							cTime = time.Now()
+							logEntry = cTime.Format(time.RFC3339) + " Too Many incorrect tries by" + " " + users[success].Username + "\n"
+							writeFile(logEntry)
+							//log entry
+							fmt.Println("Too many Incorrect Tries")
+							fmt.Print("Exiting...")
+							os.Exit(0)
+						}
+					}
+
+				} else {
+					cTime = time.Now()
+					logEntry = cTime.Format(time.RFC3339) + " Successfull Entry by" + " " + users[success].Username + "\n"
+					writeFile(logEntry)
+					//log enrty
+					userLoop(success)
+				}
+			} else {
+
+				cTime = time.Now()
+				logEntry = cTime.Format(time.RFC3339) + " Username Does Not exist" + "\n"
+				writeFile(logEntry)
+				//log entry
+
+				fmt.Println("Username Does Not Exist")
+				fmt.Println("Exiting...")
 			}
 		} else {
-
-			cTime = time.Now()
-			logEntry = cTime.Format(time.RFC3339) + " Username Does Not exist" + "\n"
-			writeFile(logEntry)
-			//log entry
-
-			fmt.Println("Username Does Not Exist")
 			fmt.Println("Exiting...")
+			os.Exit(0)
 		}
-	}
 
+	}
 }
