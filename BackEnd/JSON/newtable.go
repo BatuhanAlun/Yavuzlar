@@ -1,1 +1,4 @@
-package main
+package GoDB
+
+
+func NewTable()
